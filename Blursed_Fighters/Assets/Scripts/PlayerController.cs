@@ -6,12 +6,16 @@ public class PlayerController : MonoBehaviour
 {
     private Animator animator;
     private CharacterController characterController;
+    private Transform player_2;
+    public Transform mesh;
 
     public float speed;
     public float deadZone;
     private float forceToGround = Physics.gravity.y;
     private float gravityMag = 5f;
     public float jumpSpeed;
+    public float distance;
+
     public bool isMoving;
     private bool lastStepR;
     private bool movingPositive;
@@ -26,6 +30,7 @@ public class PlayerController : MonoBehaviour
     {
         animator = GetComponentInChildren<Animator>();
         characterController = GetComponent<CharacterController>();
+        player_2 = GameObject.FindGameObjectWithTag("Player_2").GetComponent<Transform>();
         isMoving = false;
         lastStepR = true;
         crouched = false;
@@ -60,6 +65,19 @@ public class PlayerController : MonoBehaviour
             Debug.Log("NotGrounded");
         }
         characterController.Move(moveDirection * Time.deltaTime);
+
+        //Look at enemy
+        distance = Vector3.Distance(transform.position, player_2.position);
+        if(transform.position.x >  player_2.position.x)
+        {
+            Quaternion lookRotation = Quaternion.Euler(0, 180, 0);
+            mesh.transform.rotation = Quaternion.RotateTowards(mesh.transform.rotation, lookRotation, 5);
+        }
+        else if (transform.position.x < player_2.position.x)
+        {
+            Quaternion lookRotation = Quaternion.Euler(0, 0, 0);
+            mesh.transform.rotation = Quaternion.RotateTowards(mesh.transform.rotation, lookRotation, 5);
+        }
     }
     public void MoveLeftLeg(Vector2 axis, Vector2 axis_2)
     {
@@ -99,6 +117,7 @@ public class PlayerController : MonoBehaviour
         {
             crouched = true;
             Debug.Log("Crouched");
+            animator.SetBool("Crouched", true);
         }
         if(axis == stopped || axis_2 == stopped)
         {
@@ -109,6 +128,7 @@ public class PlayerController : MonoBehaviour
             moveDirection.y = jumpSpeed;
             jumping = true;
             crouched = false;
+            animator.SetBool("Crouched", false);
         }
     }
     void SetWalkL()
@@ -132,6 +152,8 @@ public class PlayerController : MonoBehaviour
     {
         yield return new WaitForSeconds(0.5f);
         crouched = false;
+        animator.SetBool("Crouched", false);
+
         yield return null;
     }
 }
